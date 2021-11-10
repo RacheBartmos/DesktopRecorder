@@ -8,9 +8,10 @@ class Record_Contrl {
 public:
 	Record_Contrl();
 	void init();
-	static void warp_cb(void* obj, void *data);
-	void on_desktop_data(void* data);
+    void start();
 private:
+    static void warp_cb(void* obj, void *data);
+    void on_desktop_data(void* data);
 	Record_Desktop* record_desktop;
 };
 

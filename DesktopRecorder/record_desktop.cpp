@@ -1,1 +1,0 @@
-#include "record_desktop.h"
