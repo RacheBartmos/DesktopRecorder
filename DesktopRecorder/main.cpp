@@ -1,8 +1,9 @@
+#include "record_contrl.h"
 
-#include <iostream>
-using namespace std;
-int main()
+int main(int argc,char** argv)
 {
-	cout << "Hello CMake." << endl;
-	return 0;
+    Record_Contrl rc;
+    rc.init();
+    rc.start();
+    return 0;
 }

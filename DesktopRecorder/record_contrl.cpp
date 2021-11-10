@@ -7,7 +7,12 @@ Record_Contrl::Record_Contrl()
 void Record_Contrl::init()
 {
 	record_desktop = new Record_Desktop_DXGI;
-	record_desktop->regist_cb(this,warp_cb);
+    record_desktop->regist_cb(this,warp_cb);
+}
+
+void Record_Contrl::start()
+{
+    if(record_desktop) record_desktop->start();
 }
 
 void Record_Contrl::warp_cb(void* obj, void* data)
