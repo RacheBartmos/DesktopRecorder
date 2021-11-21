@@ -5,5 +5,8 @@ int main(int argc,char** argv)
     Record_Contrl rc;
     rc.init();
     rc.start();
+    while (true) {
+
+    }
     return 0;
 }

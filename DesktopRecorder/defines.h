@@ -68,7 +68,6 @@ typedef enum {
 
 /*
 * Record desktop data type
-*
 */
 
 typedef enum {

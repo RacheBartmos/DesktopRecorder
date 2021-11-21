@@ -3,7 +3,6 @@
 
 #include "headers_ffmpeg.h"
 #include "defines.h"
-#include <thread>
 
 #include <atomic>
 #include <thread>
@@ -23,7 +22,7 @@ public:
     inline bool is_recording() { return _running; }
     inline const std::string & get_device_name() { return _device_name; }
     inline const RECORD_DESKTOP_DATA_TYPES get_data_type() { return _data_type; }
-	typedef void (*on_cb_data)(void *obj,void* data);
+    typedef void (*on_cb_data)(void *obj,AVFrame* data);
 	void regist_cb(void* obj, on_cb_data cb) {
         _cb_obj = obj;
 		_cb_data = cb;

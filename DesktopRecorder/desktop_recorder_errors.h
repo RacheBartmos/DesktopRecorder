@@ -14,6 +14,30 @@ enum All_ERRORS{
     NORMAL_TIMEOUT,
     NORMAL_ALLOCATE_FAILED,
 
+    //ENCODER_FFMPEG_
+    ENCODER_FFMPEG_OPEN_INPUT_FAILED,
+    ENCODER_FFMPEG_FIND_STREAM_FAILED,
+    ENCODER_FFMPEG_FIND_DECODER_FAILED,
+    ENCODER_FFMPEG_OPEN_CODEC_FAILED,
+    ENCODER_FFMPEG_READ_FRAME_FAILED,
+    ENCODER_FFMPEG_READ_PACKET_FAILED,
+    ENCODER_FFMPEG_DECODE_FRAME_FAILED,
+    ENCODER_FFMPEG_NEW_SWSCALE_FAILED,
+    ENCODER_FFMPEG_FIND_ENCODER_FAILED,
+    ENCODER_FFMPEG_ALLOC_CONTEXT_FAILED,
+    ENCODER_FFMPEG_ENCODE_FRAME_FAILED,
+    ENCODER_FFMPEG_ALLOC_FRAME_FAILED,
+    ENCODER_FFMPEG_OPEN_IO_FAILED,
+    ENCODER_FFMPEG_CREATE_STREAM_FAILED,
+    ENCODER_FFMPEG_COPY_PARAMS_FAILED,
+    ENCODER_RESAMPLE_INIT_FAILED,
+    ENCODER_FFMPEG_NEW_STREAM_FAILED,
+    ENCODER_FFMPEG_FIND_INPUT_FMT_FAILED,
+    ENCODER_FFMPEG_WRITE_HEADER_FAILED,
+    ENCODER_FFMPEG_WRITE_TRAILER_FAILED,
+    ENCODER_FFMPEG_WRITE_FRAME_FAILED,
+
+
     //GDI_
     R_GDI_GET_DC_FAILED,
     R_GDI_CREATE_DC_FAILED,
@@ -63,6 +87,28 @@ static const char *ERRORS_STR[] = {
     "need init first",                      //NORMAL_NEED_INIT
     "operation timeout",                    //NORMAL_TIMEOUT
     "allocate memory failed",               //NORMAL_ALLOCATE_FAILED
+
+    "ffmpeg open input failed",             //ENCODER_FFMPEG_OPEN_INPUT_FAILED
+    "ffmpeg find stream info failed",       //ENCODER_FFMPEG_FIND_STREAM_FAILED
+    "ffmpeg find decoder failed",           //ENCODER_FFMPEG_FIND_DECODER_FAILED
+    "ffmpeg open codec failed",             //ENCODER_FFMPEG_OPEN_CODEC_FAILED
+    "ffmpeg read frame failed",             //ENCODER_FFMPEG_READ_FRAME_FAILED
+    "ffmpeg read packet failed",            //ENCODER_FFMPEG_READ_PACKET_FAILED
+    "ffmpeg decode frame failed",           //ENCODER_FFMPEG_DECODE_FRAME_FAILED
+    "ffmpeg create swscale failed",         //ENCODER_FFMPEG_NEW_SWSCALE_FAILED
+    "ffmpeg find encoder failed",           //ENCODER_FFMPEG_FIND_ENCODER_FAILED
+    "ffmpeg alloc context failed",          //ENCODER_FFMPEG_ALLOC_CONTEXT_FAILED
+    "ffmpeg encode frame failed",           //ENCODER_FFMPEG_ENCODE_FRAME_FAILED
+    "ffmpeg alloc frame failed",            //ENCODER_FFMPEG_ALLOC_FRAME_FAILED
+    "ffmpeg open io ctx failed",            //ENCODER_FFMPEG_OPEN_IO_FAILED
+    "ffmpeg new stream failed",             //ENCODER_FFMPEG_CREATE_STREAM_FAILED
+    "ffmpeg copy parameters failed",        //ENCODER_FFMPEG_COPY_PARAMS_FAILED
+    "resampler init failed",                //ENCODER_RESAMPLE_INIT_FAILED
+    "ffmpeg new out stream failed",         //ENCODER_FFMPEG_NEW_STREAM_FAILED
+    "ffmpeg find input format failed",      //ENCODER_FFMPEG_FIND_INPUT_FMT_FAILED
+    "ffmpeg write file header failed",      //ENCODER_FFMPEG_WRITE_HEADER_FAILED
+    "ffmpeg write file trailer failed",     //ENCODER_FFMPEG_WRITE_TRAILER_FAILED
+    "ffmpeg write frame failed",            //ENCODER_FFMPEG_WRITE_FRAME_FAILED
 
     "gdi get dc failed",                    //R_GDI_GET_DC_FAILED
     "gdi create dc failed",                 //R_GDI_CREATE_DC_FAILED

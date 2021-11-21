@@ -27,7 +27,7 @@ public:
     virtual int start();
     virtual int stop();
 protected:
-    virtual void clean_up() override;
+    virtual void clean_up();
 private:
     int get_dst_adapter(IDXGIAdapter **adapter);
     int create_d3d_device(IDXGIAdapter *adapter,ID3D11Device **device);

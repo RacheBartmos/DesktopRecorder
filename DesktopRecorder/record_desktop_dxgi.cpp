@@ -1,6 +1,26 @@
+/* *
+ * Author:     dengjinhui <dengjinhui@cdzs.com>
+ *
+ * Maintainer: dengjinhui <dengjinhui@cdzs.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * */
 #include "record_desktop_dxgi.h"
 #include "desktop_recorder_errors.h"
 #include "utils_string.h"
+
+#include <time.h>
 
 Record_Desktop_DXGI::Record_Desktop_DXGI()
 {
@@ -151,8 +171,7 @@ int Record_Desktop_DXGI::create_d3d_device(IDXGIAdapter* adapter, ID3D11Device**
 {
 	int error = ERROR_NO;
 	do {
-		PFN_D3D11_CREATE_DEVICE create_device =
-			(PFN_D3D11_CREATE_DEVICE)GetProcAddress(_d3d11, "D3D11CreateDevice");
+        PFN_D3D11_CREATE_DEVICE create_device = (PFN_D3D11_CREATE_DEVICE)GetProcAddress(_d3d11, "D3D11CreateDevice");
 		if (!create_device) {
 			error = R_D3D_GET_PROC_FAILED;
 			break;
@@ -584,7 +603,7 @@ void Record_Desktop_DXGI::record_func()
 	AVFrame* frame = av_frame_alloc();
 	int64_t pre_pts = 0, dur = AV_TIME_BASE / _fps;
 
-	int error = ERROR_NO;
+    int error_r = ERROR_NO;
 
 	//Should init after desktop attatched
 	//error = init_duplication();
@@ -598,22 +617,24 @@ void Record_Desktop_DXGI::record_func()
 	DXGI_OUTDUPL_FRAME_INFO frame_info;
 	while (_running)
 	{
+        //clock_t first = clock();
 		//Timeout is no new picture,no need to update
-		if ((error = get_desktop_image(&frame_info)) == NORMAL_TIMEOUT) continue;
-
-		if (error != ERROR_NO) {
+        if ((error_r = get_desktop_image(&frame_info)) == NORMAL_TIMEOUT) continue;
+        if (error_r != ERROR_NO) {
 			while (_running)
 			{
 				Sleep(300);
 				clean_duplication();
-				if ((error = init_duplication()) != ERROR_NO) {
+                error_r = init_duplication();
+                if (error_r != ERROR_NO) {
 					//if (_on_error) _on_error(error);
 				}
 				else break;
 			}
 			continue;
 		}
-		if ((error = get_desktop_cursor(&frame_info)) == ERROR_NO) draw_cursor();
+        error_r = get_desktop_cursor(&frame_info);
+        if (error_r == ERROR_NO) draw_cursor();
 
 		free_duplicated_frame();
 		frame->pts = av_gettime_relative();
@@ -633,6 +654,8 @@ void Record_Desktop_DXGI::record_func()
 			1
 		);
 		if (_cb_data) _cb_data(_cb_obj, frame);
+        //clock_t second = clock();
+        //printf("%f\n",(double)(second-first)/CLOCKS_PER_SEC);
 		do_sleep(dur, pre_pts, frame->pts);
 		pre_pts = frame->pts;
 	}
