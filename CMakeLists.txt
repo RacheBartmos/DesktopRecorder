@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.14)
+﻿cmake_minimum_required(VERSION 3.14)
 
 project(DesktopRecorder LANGUAGES CXX VERSION 0.1)
 
@@ -9,12 +9,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(FFMpegDepends avcodec avdevice avfilter avformat avutil swscale)
 include_directories(./deps/include)
 link_directories(./deps/lib)
-FILE(GLOB allHeads  
-	"./DesktopRecorder/*.h"
+FILE(GLOB allHeads
+    "./DesktopRecorder/*.h"
 )
 
-FILE(GLOB allSources  
-	"./DesktopRecorder/*.cpp"
+FILE(GLOB allSources
+    "./DesktopRecorder/*.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${allHeads} ${allSources} "./DesktopRecorder/main.cpp")
