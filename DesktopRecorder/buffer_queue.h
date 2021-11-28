@@ -1,86 +1,117 @@
+/* *
+ * Author:     dengjinhui <dengjinhui@cdzs.com>
+ *
+ * Maintainer: dengjinhui <dengjinhui@cdzs.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * */
+
 #ifndef BUFFER_QUEUE_H
 #define BUFFER_QUEUE_H
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <queue>
 #include <mutex>
 
-template <typename T>
-struct queue_frame {
-	T type;
-	int len;
+extern "C"{
+    
+//异步单链表队列
+struct Node_t {
+    uint8_t* _data = nullptr;
+    Node_t* next = nullptr;
+    Node_t() {
+
+    }
+    Node_t(const void* data, size_t len) {
+        if (data) {
+            _data = new uint8_t[len];
+            memcpy(_data, data, len);
+        }
+    }
+    ~Node_t() {
+        delete []_data;
+        _data = nullptr;
+        next = nullptr;
+    }
 };
 
-template <typename T>
-class Buffer_Queue
-{
-public:
-	Buffer_Queue(unsigned int size = 1920 * 1080 * 4 * 10) {
-		_size = size;
-		_head = _tail = 0;
-		_buf = new uint8_t[size];
-	}
-	~Buffer_Queue() {
-		if (_buf) delete[] _buf;
-	}
 
-	void put(const void* data, int len, const T& type) {
-		std::lock_guard<std::mutex> locker(_lock);
-		if (_head + len <= _size) {
-			memcpy(_buf + _head, data, len);
-			_head += len;
-		}
-		else if (_head + len > _size) {
-			int remain = len - (_size - _head);
-			if (len - remain > 0) memcpy(_buf + _head, data, len - remain);
-			if (remain > 0) memcpy(_buf, (unsigned char*)data + len - remain, remain);
-			_head = remain;
-		}
-		struct queue_frame<T> frame;
-		frame.len = len;
-		frame.type = type;
-		_frames.push(frame);
+struct Buffer_Queue {
 
-	}
-	int get(void* data, int len, T& type) {
-		std::lock_guard<std::mutex> locker(_lock);
-		int retLen = 0;
-		if (_frames.size() <= 0) {
-			retLen = 0;
-			return retLen;
-		}
-		struct queue_frame<T> frame = _frames.front();
-		_frames.pop();
-		if (frame.len > len) {
-            printf("ringbuff::get need larger buffer");
-			return 0;
-		}
-		type = frame.type;
-		retLen = frame.len;
-		if (_tail + frame.len <= _size) {
-			memcpy(data, _buf + _tail, frame.len);
-			_tail += frame.len;
-		}
-		else {
-			int remain = frame.len - (_size - _tail);
+    static inline void releaseNode(Node_t* node) {
+        if (node->next)
+            releaseNode(node->next);
+        delete node;
+    }
 
-			if (frame.len - remain > 0)
-				memcpy(data, _buf + _tail, frame.len - remain);
+    void setCapacity(int c) { capacity = c; }
+    void releaseBuffer() {
+        Node_t* p = head->next;
+        uint32_t i = 0;
+        releaseNode(p);
+        buffer_size = 0;
+        head->next = nullptr;
+        delete head;
+        head = new Node_t;
+        currentNum = 0;
+    }
+    int getCurrent() { return currentNum; }
+    Buffer_Queue() {
+        head = new Node_t;
+    }
 
-			if (remain > 0)
-				memcpy((unsigned char*)data + frame.len - remain, _buf, remain);
-
-			_tail = remain;
-		}
-		return retLen;
-	}
-private:
-	std::queue<queue_frame<T>> _frames;
-	unsigned int _size, _head, _tail;
-	uint8_t* _buf;
-	std::mutex _lock;
+    Node_t* head;
+    uint32_t currentNum = 0;
+    uint32_t capacity = 10;
+    size_t buffer_size = 0;
+    std::mutex _lock;
 };
+
+static inline bool put(Buffer_Queue *queue, const void* data, size_t len) {
+    std::lock_guard<std::mutex> locker(queue->_lock);
+    if (queue->buffer_size == 0) {
+        queue->buffer_size = len;
+    }
+    else if (queue->buffer_size != len) {
+        printf("buffer size different!\n");
+        return false;
+    }
+    Node_t* p = queue->head;
+    uint32_t i = 0;
+    while (p->next && ++i < queue->capacity) {p = p->next;}
+    if (i >= queue->capacity) {
+        printf("buffer_queue full\n");
+        return false;
+    }
+    Node_t* node = new Node_t(data,len);
+    p->next = node;
+    queue->currentNum++;
+    return true;
+}
+
+static inline bool get(Buffer_Queue *queue, void* dst) {
+    std::lock_guard<std::mutex> locker(queue->_lock);
+    Node_t* p = queue->head->next;
+    if (!p) return false;
+    memcpy(dst, p->_data, queue->buffer_size);
+    queue->head->next = p->next;
+    delete p;
+    queue->currentNum--;
+    return true;
+}
+
+
+}
+
+
 
 #endif // BUFFER_QUEUE_H

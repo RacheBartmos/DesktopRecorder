@@ -24,25 +24,56 @@ Record_Contrl::Record_Contrl()
 
 void Record_Contrl::init()
 {
-	record_desktop = new Record_Desktop_DXGI;
-    RECORD_DESKTOP_RECT rect;
-    rect = {0,0,2560,1080};
-    record_desktop->init(rect,10);
-    record_desktop->regist_cb(this,warp_record_cb);
+    dxgi_capture = new DXGI_FrameCapturer;
 }
 
 void Record_Contrl::start()
 {
-    if(record_desktop) record_desktop->start();
+    _thread = std::thread(std::bind(&Record_Contrl::record_loop, this));
 }
 
-void Record_Contrl::warp_record_cb(void* obj, AVFrame* frame)
+void Record_Contrl::setFPS(int32_t fps)
 {
-	Record_Contrl* p = reinterpret_cast<Record_Contrl*>(obj);
+    record_fps = fps;
+}
+
+void Record_Contrl::record_loop()
+{
+    CapturedFrame *frame = new CapturedFrame;
+    frame->width = dxgi_capture->getWidth();
+    frame->height = dxgi_capture->getHeight();
+    frame->lenght = dxgi_capture->getLenght();
+    frame->buffer = new unsigned char[dxgi_capture->getLenght()];
+    frame->isUpdate = true;
+    record_fps = record_fps > DefautFPS || record_fps <= 0 ? DefautFPS: record_fps;
+    while (_running) {
+#ifdef WIN32
+        Sleep(1000.0f/record_fps);
+        if(!frame->isUpdate){
+            continue;
+        }
+        memset(frame->buffer,0,dxgi_capture->getLenght());
+        if (tryCaptureFrame(dxgi_capture,frame->buffer)) {
+            frame->isUpdate = false;
+            //_on_image_data(_obj, frame);
+            //QMetaObject::invokeMethod(_obj,"getFrame",Qt::AutoConnection,Q_ARG(Frame*,frame));
+        }
+#endif
+#ifdef linux
+        usleep(1000.0f/record_fps);
+        //...TO-DO
+#endif
+    }
+    delete frame;
+}
+
+void Record_Contrl::warp_record_cb(void* obj, CapturedFrame* frame)
+{
+    Record_Contrl* p = reinterpret_cast<Record_Contrl*>(obj);
     if (p) p->on_desktop_data(frame);
 }
 
-void Record_Contrl::on_desktop_data(AVFrame* data)
+void Record_Contrl::on_desktop_data(CapturedFrame* data)
 {
 
 }

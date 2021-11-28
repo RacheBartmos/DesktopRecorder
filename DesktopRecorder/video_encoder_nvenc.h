@@ -1,10 +1,9 @@
 #ifndef ENCODER_VIDEO_NVENC
 #define ENCODER_VIDEO_NVENC
 
-#include "video_encoder.h"
+#include "headers_ffmpeg.h"
 
-class Video_Encoder_NVENC :
-    public Video_Encoder
+class Video_Encoder_NVENC
 {
 public:
     Video_Encoder_NVENC();
@@ -26,6 +25,7 @@ protected:
 private:
     int encode(AVFrame *frame, AVPacket *packet);
 private:
+    bool _running;
     AVCodec *_encoder;
     AVCodecContext *_encoder_ctx;
     AVFrame *_frame;
