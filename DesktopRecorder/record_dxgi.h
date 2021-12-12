@@ -87,7 +87,7 @@ struct DXGI_FrameCapturer
     uint32_t getHeight();
     uint32_t getWidth();
 
-    void captureStateInit(int x, int y, int w, int h);
+    bool captureStateInit(int x, int y, int w, int h);
 };
 
 static inline bool tryCaptureFrame(DXGI_FrameCapturer *capture,unsigned char* copy_to_buffer)

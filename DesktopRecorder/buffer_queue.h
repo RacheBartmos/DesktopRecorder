@@ -20,95 +20,94 @@
 #ifndef BUFFER_QUEUE_H
 #define BUFFER_QUEUE_H
 
-#include <mutex>
+#include <iostream>
+extern "C" {
 
-extern "C"{
-    
-//异步单链表队列
-struct Node_t {
-    uint8_t* _data = nullptr;
-    Node_t* next = nullptr;
-    Node_t() {
+	//单链表,无拷贝队列
+	struct Node_t {
+		uint8_t** _data = nullptr;
+		Node_t* next = nullptr;
+		Node_t() {
 
-    }
-    Node_t(const void* data, size_t len) {
-        if (data) {
-            _data = new uint8_t[len];
-            memcpy(_data, data, len);
-        }
-    }
-    ~Node_t() {
-        delete []_data;
-        _data = nullptr;
-        next = nullptr;
-    }
-};
+		}
+		Node_t(uint8_t* data, size_t len) {
+			if (data) {
+				_data = &data;
+			}
+		}
+		~Node_t() {
+			_data = nullptr;
+			next = nullptr;
+		}
+	};
 
 
-struct Buffer_Queue {
+	struct Buffer_Queue {
+		static inline void releaseNode(Node_t* node) {
+			if (node->next)
+				releaseNode(node->next);
+			delete node;
+		}
 
-    static inline void releaseNode(Node_t* node) {
-        if (node->next)
-            releaseNode(node->next);
-        delete node;
-    }
+		void setCapacity(int c) { capacity = c; }
+		void releaseBuffer() {
+			Node_t* p = head->next;
+			uint32_t i = 0;
+			releaseNode(p);
+			buffer_size = 0;
+			head->next = nullptr;
+			delete head;
+			head = new Node_t;
+			tail = nullptr;
+			currentNum = 0;
+		}
+		int getCurrent() { return currentNum; }
+		Buffer_Queue() {
+			head = new Node_t;
+			tail = nullptr;
+		}
 
-    void setCapacity(int c) { capacity = c; }
-    void releaseBuffer() {
-        Node_t* p = head->next;
-        uint32_t i = 0;
-        releaseNode(p);
-        buffer_size = 0;
-        head->next = nullptr;
-        delete head;
-        head = new Node_t;
-        currentNum = 0;
-    }
-    int getCurrent() { return currentNum; }
-    Buffer_Queue() {
-        head = new Node_t;
-    }
+		Node_t* head;
+		Node_t* tail;
+		uint32_t currentNum = 0;
+		uint32_t capacity = 10;
+		size_t buffer_size = 0;
+	};
 
-    Node_t* head;
-    uint32_t currentNum = 0;
-    uint32_t capacity = 10;
-    size_t buffer_size = 0;
-    std::mutex _lock;
-};
+	static inline bool put_buffer(Buffer_Queue* queue, uint8_t* data, size_t len) {
+		if (queue->buffer_size == 0) {
+			queue->buffer_size = len;
+		}
+		else if (queue->buffer_size != len) {
+			printf("buffer size different!\n");
+			return false;
+		}
+		if (queue->currentNum + 1 >= queue->capacity) {
+			printf("buffer_queue full\n");
+			return false;
+		}
+		Node_t* node = new Node_t(data, len);
+		if (queue->tail) {
+			queue->tail->next = node;
+		}
+		else {
+			queue->head->next = node;
+		}
+		queue->tail = node;
+		queue->currentNum++;
+		return true;
+	}
 
-static inline bool put(Buffer_Queue *queue, const void* data, size_t len) {
-    std::lock_guard<std::mutex> locker(queue->_lock);
-    if (queue->buffer_size == 0) {
-        queue->buffer_size = len;
-    }
-    else if (queue->buffer_size != len) {
-        printf("buffer size different!\n");
-        return false;
-    }
-    Node_t* p = queue->head;
-    uint32_t i = 0;
-    while (p->next && ++i < queue->capacity) {p = p->next;}
-    if (i >= queue->capacity) {
-        printf("buffer_queue full\n");
-        return false;
-    }
-    Node_t* node = new Node_t(data,len);
-    p->next = node;
-    queue->currentNum++;
-    return true;
-}
-
-static inline bool get(Buffer_Queue *queue, void* dst) {
-    std::lock_guard<std::mutex> locker(queue->_lock);
-    Node_t* p = queue->head->next;
-    if (!p) return false;
-    memcpy(dst, p->_data, queue->buffer_size);
-    queue->head->next = p->next;
-    delete p;
-    queue->currentNum--;
-    return true;
-}
-
+	static inline bool get_buffer(Buffer_Queue* queue, uint8_t*& dst) {
+		Node_t* p = queue->head->next;
+		if (!p) return false;
+		dst = *(p->_data);
+		queue->head->next = p->next;
+		if (p->next == nullptr)
+			queue->tail = nullptr;
+		queue->currentNum--;
+		return true;
+	}
 
 }
 

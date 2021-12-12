@@ -16,7 +16,7 @@ uint32_t DXGI_FrameCapturer::getWidth()
     return this->width;
 }
 
-void DXGI_FrameCapturer::captureStateInit(int x, int y, int w, int h)
+bool DXGI_FrameCapturer::captureStateInit(int x, int y, int w, int h)
 {
     if (this->dxgi_factory != nullptr)dxgi_factory->Release();
     if (this->device != nullptr)this->device->Release();
@@ -28,6 +28,7 @@ void DXGI_FrameCapturer::captureStateInit(int x, int y, int w, int h)
     if (FAILED(hr))
     {
         printf("Error create dxgi factory: %ld",hr);
+        return false;
     }
 
     D3D_FEATURE_LEVEL supported_feature_levels[] =
@@ -45,6 +46,7 @@ void DXGI_FrameCapturer::captureStateInit(int x, int y, int w, int h)
     if (FAILED(hr))
     {
          printf("Error create d3d11 device: %ld",hr);
+         return false;
     }
 
     this->x = x;
@@ -106,6 +108,7 @@ void DXGI_FrameCapturer::captureStateInit(int x, int y, int w, int h)
 
     this->width = this->capture_window_right - this->capture_window_left;
     this->height = this->capture_window_bottom - this->capture_window_top;
+    return true;
 }
 
 
