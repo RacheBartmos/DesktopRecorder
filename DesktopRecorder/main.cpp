@@ -1,13 +1,12 @@
-#include "record_contrl.h"
+#include <QGuiApplication>
+#include "h264_encoder.h"
 
 int main(int argc,char** argv)
 {
-    Record_Contrl rc;
-    rc.init();
-    rc.setFPS(1);
-    rc.start();
-    while (true) {
+    QGuiApplication a(argc, argv);
 
-    }
-    return 0;
+    h264_encoder encoder;
+    encoder.png2mp4("E:/item/video/capture_test_video.mp4");
+    exit(0);
+    return a.exec();
 }
